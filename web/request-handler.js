@@ -36,12 +36,7 @@ var actions = {
     // }
     var url = req.url;
     archive.isUrlArchived(url, function(bool, data, statusCode) {
-      if (url === '/') {
-        // do not pass back statusCode, / is not in archive thus 404 will always be triggered 
-        sendResponse(res, '<input');
-      } else {
-        sendResponse(res, data, statusCode);
-      }
+      sendResponse(res, data, statusCode);
     });
   },
   'POST': function(req, res) {

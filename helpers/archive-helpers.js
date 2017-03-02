@@ -63,6 +63,15 @@ exports.addUrlToList = function(url, callback) {
   });
 };
 exports.isUrlArchived = function(url, callback) {
+  if (url === '/') {
+    fs.readFile('/Volumes/student/hrsf72-web-historian/web/public/index.html', 'utf8', function(error, content) {
+      if (error) {
+        callback(false, error, 404);
+      } else {
+        callback(true, content, undefined);
+      }
+    });
+  }
   fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(error, content) {
     if (error) {
       callback(false, error, 404);
@@ -73,6 +82,7 @@ exports.isUrlArchived = function(url, callback) {
 };
 
 exports.downloadUrls = function(urls) {
+  // urls = urls.split('\n');
   for (var i = 0; i < urls.length; i++) { 
     var path = exports.paths.archivedSites + '/' + urls[i];
     fs.writeFile(path, urls[i], 'utf8', function(error, content) { });
