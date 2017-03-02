@@ -26,44 +26,59 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function(callback) {
+  fs.readFile(exports.paths.list, 'utf8', function(error, content) {
+    if (error) {
+      callback(error); 
+    } else {
+      var fileList = content.split('\n');
+      callback(fileList);
+    }
+  });
 };
 
 exports.isUrlInList = function(url, callback) {
   // check if url is in sites.txt
-  var listItems = fs.readFile('/Volumes/student/hrsf72-web-historian/test/testdata/sites.txt', 'utf8', function(error, content) {
+  var listItems = fs.readFile(exports.paths.list, 'utf8', function(error, content) {
     if (error) {
       callback(error);
     } else {
-      var items = content.toString().split(' ');
-      _.reduce(items, function(accumulator, curr) {
+      var items = content.toString().split('\n');
+      callback(_.reduce(items, function(accumulator, curr) {
         if (url === curr) {
           accumulator = true;
         }
         return accumulator;
-      }, false);
+      }, false));
     }
   });
 };
 
 exports.addUrlToList = function(url, callback) {
-  fs.writeFile('/Volumes/student/hrsf72-web-historian/test/testdata/sites.txt', url, 'utf8');
+  fs.appendFile(exports.paths.list, url + '\n', 'utf8', function(error, content) {
+    if (error) {
+      callback(error);
+    } else {  
+      callback(url);
+    }
+  });
 };
 exports.isUrlArchived = function(url, callback) {
+  fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(error, content) {
+    if (error) {
+      callback(false, error, 404);
+    } else {
+      callback(true, content, undefined);
+    }
+  });
 };
 
 exports.downloadUrls = function(urls) {
-  var path = '/Volumes/student/hrsf72-web-historian/archives/sites' + urls;
-  // make file and close
-  var fd = fs.open(path, 'w', function() {});
-  fs.write(fd, url, 'utf8');
-  fs.close(fd);
+  for (var i = 0; i < urls.length; i++) { 
+    var path = exports.paths.archivedSites + '/' + urls[i];
+    fs.writeFile(path, urls[i], 'utf8', function(error, content) { });
+  }
 };
 
-// made by us
-exports.readUrlFile = function(url) {
-  var path = '/Volumes/student/hrsf72-web-historian/archives/sites' + url;
-  console.log(path);
-};
 
       // it('should return the content of a website from the archive', function (done) {
       //   var fixtureName = 'www.google.com';

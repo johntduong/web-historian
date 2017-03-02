@@ -16,39 +16,40 @@ var collectResponse = function(request, callback) {
     data += chunk;
   });
   request.on ('end', function() {
-    callback(JSON.parse(data));
+    var responseUrl = data.split('=')[1];
+    // should parse data but causes undefined
+    callback(responseUrl);
   });
 };
 
 var actions = {
   'GET': function(req, res) {
-    // take url request
-    var returnResult;
+    // // check if url exists
+    // if (archive.isUrlInList(url, null)) {
+    //   // if it exists, display it
+    //     // ie render in index
+    // } else {
+    //   // else add it to the list
+    //   // archive.addUrlToList(url, null);
+    //   // archive.downloadUrls(url);
+    //     // TODO: show placeholder
+    // }
     var url = req.url;
-    // check if url exists
-    if (archive.isUrlInList(url, null)) {
-      // if it exists, display it
-        // ie render in index
-      returnResults = archive.readUrlFile(url);
-    } else {
-      // else add it to the list
-      archive.addUrlToList(url, null);
-      archive.downloadUrls(url);
-        // TODO: show placeholder
-      // console.log('constructor', Object.constructor(archive.readUrlFile));
-      console.log(url);
-      returnResults = archive.readUrlFile(url);
-    }
-    sendResponse(res, returnResults);
+    archive.isUrlArchived(url, function(bool, data, statusCode) {
+      if (url === '/') {
+        // do not pass back statusCode, / is not in archive thus 404 will always be triggered 
+        sendResponse(res, '<input');
+      } else {
+        sendResponse(res, data, statusCode);
+      }
+    });
   },
   'POST': function(req, res) {
     collectResponse(req, function(data) {
-      // 
+      archive.addUrlToList(data, function(content) {
+        sendResponse(res, content, 302);
+      });
     });
-    // check if url is in list
-    // if it is, call serve assets (show the page)
-    // if not, add it to the list
-      // show placeholder bot working page
   },
   'OPTIONS': ''// TODO: set headers
 };
@@ -61,5 +62,4 @@ exports.handleRequest = function (req, res) {
     // TODO: send response with 404;
     sendResponse(res, '', 404);
   }
-  res.end(archive.paths.list);
 };
