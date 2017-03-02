@@ -71,14 +71,15 @@ exports.isUrlArchived = function(url, callback) {
         callback(true, content, undefined);
       }
     });
+  } else {
+    fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(error, content) {
+      if (error) {
+        callback(false, error, 404);
+      } else {
+        callback(true, content, undefined);
+      }
+    });
   }
-  fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(error, content) {
-    if (error) {
-      callback(false, error, 404);
-    } else {
-      callback(true, content, undefined);
-    }
-  });
 };
 
 exports.downloadUrls = function(urls) {

@@ -24,6 +24,11 @@ var collectResponse = function(request, callback) {
 
 var actions = {
   'GET': function(req, res) {
+    // change request url to match formatting of actual stored archive urls
+    var url = req.url;
+    if (req.url !== '/' ) {
+      url = req.url.split('=')[1];
+    } 
     // // check if url exists
     // if (archive.isUrlInList(url, null)) {
     //   // if it exists, display it
@@ -34,7 +39,18 @@ var actions = {
     //   // archive.downloadUrls(url);
     //     // TODO: show placeholder
     // }
-    var url = req.url;
+
+    // archive.isUrlInList(url, function(bool) {
+    //   if (bool) {
+    //     // show html
+    //     archive.isUrlArchived(url, function(bool, data, statusCode) {
+    //       sendResponse(res, data, statusCode);
+    //     });
+    //   } else {
+
+    //   }
+    // });
+
     archive.isUrlArchived(url, function(bool, data, statusCode) {
       sendResponse(res, data, statusCode);
     });
