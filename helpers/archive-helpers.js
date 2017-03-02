@@ -29,13 +29,58 @@ exports.readListOfUrls = function(callback) {
 };
 
 exports.isUrlInList = function(url, callback) {
+  // check if url is in sites.txt
+  var listItems = fs.readFile('/Volumes/student/hrsf72-web-historian/test/testdata/sites.txt', 'utf8', function(error, content) {
+    if (error) {
+      callback(error);
+    } else {
+      var items = content.toString().split(' ');
+      _.reduce(items, function(accumulator, curr) {
+        if (url === curr) {
+          accumulator = true;
+        }
+        return accumulator;
+      }, false);
+    }
+  });
 };
 
 exports.addUrlToList = function(url, callback) {
+  fs.writeFile('/Volumes/student/hrsf72-web-historian/test/testdata/sites.txt', url, 'utf8');
 };
-
 exports.isUrlArchived = function(url, callback) {
 };
 
 exports.downloadUrls = function(urls) {
+  var path = '/Volumes/student/hrsf72-web-historian/archives/sites' + urls;
+  // make file and close
+  var fd = fs.open(path, 'w', function() {});
+  fs.write(fd, url, 'utf8');
+  fs.close(fd);
 };
+
+// made by us
+exports.readUrlFile = function(url) {
+  var path = '/Volumes/student/hrsf72-web-historian/archives/sites' + url;
+  console.log(path);
+};
+
+      // it('should return the content of a website from the archive', function (done) {
+      //   var fixtureName = 'www.google.com';
+      //   var fixturePath = archive.paths.archivedSites + '/' + fixtureName;
+
+      //   // Create or clear the file.
+      //   var fd = fs.openSync(fixturePath, 'w');
+      //   fs.writeSync(fd, 'google');
+      //   fs.closeSync(fd);
+
+      //   // Write data to the file.
+      //   fs.writeFileSync(fixturePath, 'google');
+
+      //   request
+      //     .get('/' + fixtureName)
+      //     .expect(200, /google/, function (err) {
+      //       fs.unlinkSync(fixturePath);
+      //       done(err);
+      //     });
+      // });
