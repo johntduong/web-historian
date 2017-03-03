@@ -38,18 +38,29 @@ exports.readListOfUrls = function(callback) {
 
 exports.isUrlInList = function(url, callback) {
   // check if url is in sites.txt
+  // console.log('url ',url)
   exports.readListOfUrls(function(content) {  
-    callback(_.reduce(content, function(accumulator, curr) {
+    // console.log('list of content ', content)
+    var booleanValue = _.reduce(content, function(accumulator, curr) {
+      // console.log('curr', curr)
+      // console.log('url', url)
+      if (!curr.length) {
+        return accumulator;
+      }
+
       if (url === curr) {
+        console.log('equal', url)
         accumulator = true;
       } 
       return accumulator;
-    }, false));
+    }, false);
+    // console.log(booleanValue);
+    callback(booleanValue);
   });
 };
 
 exports.addUrlToList = function(url, callback) {
-  console.log('we are adding to the list')
+  console.log('we are adding to the list');
   fs.appendFile(exports.paths.list, url + '\n', 'utf8', function(error, content) {
     if (error) {
       callback(error);
@@ -57,6 +68,14 @@ exports.addUrlToList = function(url, callback) {
       callback();
     }
   });
+
+  fs.readFile(exports.paths.list, 'utf8', function(error, content) {
+    if (error) {
+      console.log(' THERE IS A HUGE ERROR HERE');
+    } else {
+      console.log('content after adding to the list', content)
+    }
+  })
 };
 
 exports.isUrlArchived = function(url, callback) {

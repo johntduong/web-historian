@@ -22,7 +22,7 @@ exports.sendRedirect = function(response, location, statusCode) {
 exports.sendResponse = function (response, data, statusCode) {
   statusCode = statusCode || 200;
   response.writeHead(statusCode, exports.headers);
-  response.end(JSON.stringify(data));
+  response.end(data);
 };
 
 exports.collectResponse = function(request, callback) {

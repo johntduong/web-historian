@@ -24,7 +24,7 @@ var actions = {
         // otherwise, sends response
       // so check if url is in list
       archive.isUrlInList(url, function(bool) {
-        console.log(bool)
+        console.log('url here', url)
         if (bool) {
           console.log("getting")
           // if it is already in list, redirect
@@ -53,7 +53,7 @@ var actions = {
         if (bool) {
           console.log('checking list');
           // if it is in the list, check if it is in the archive
-          utils.isUrlArchived(url, function(bool) {
+          archive.isUrlArchived(url, function(bool) {
             if (bool) {
               console.log('checking archive')
               // serve if already in archive
@@ -77,11 +77,10 @@ var actions = {
 };
 
 exports.handleRequest = function (req, res) {
-  var action = req.method; // grab request method
+  var action = req.method;
   if (actions[action]) {
     actions[action](req, res);
   } else {
-    // TODO: send response with 404;
     utils.sendResponse(res, null, 404);
   }
 };
