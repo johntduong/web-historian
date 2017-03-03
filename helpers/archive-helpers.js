@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 var http = require('http');
+var request = require('request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -28,6 +29,7 @@ exports.readListOfUrls = function(callback) {
     if (error) {
       callback(error); 
     } else {
+      console.log(content);
       var fileList = content.split('\n');
       callback(fileList);
     }
@@ -47,47 +49,40 @@ exports.isUrlInList = function(url, callback) {
 };
 
 exports.addUrlToList = function(url, callback) {
+  console.log('we are adding to the list')
   fs.appendFile(exports.paths.list, url + '\n', 'utf8', function(error, content) {
     if (error) {
       callback(error);
     } else {
-      callback(url);
+      callback();
     }
   });
 };
 
 exports.isUrlArchived = function(url, callback) {
-  if (url === '/') {
-    fs.readFile('/Volumes/student/hrsf72-web-historian/web/public/index.html', 'utf8', function(error, content) {
-      if (error) {
-        callback(false, error, 404);
-      } else {
-        callback(true, content, undefined);
-      }
-    });
-  } else {
-    fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(error, content) {
-      if (error) {
-        callback(false, error, 404);
-      } else {
-        if (!content) {
-          callback(false, null, 404);
-        } else {
-          callback(true, content, undefined);
-        }
-      }
-    });
-  }
+  fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(error, content) {
+    if (error) {
+      callback(false);
+    } else {
+      callback(true);
+    }
+  });
 };
 
 exports.downloadUrls = function(urls) {
   // need http://
   // pipe the readable stream with a createWriteStream
+  console.log(urls)
   if (typeof urls === 'string') {
     urls = urls.split('\n');
   }
+  console.log(urls)
   _.each(urls, function(url) {
-    console.log('inside', url)
+    console.log(url);
     http.request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
+    // fs.writeFile(exports.paths.archivedSites + '/' + url, 'hi friend');
+    fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(error, content) {
+      console.log(content);
+    });
   });
 };

@@ -12,6 +12,7 @@ exports.headers = {
 };
 
 exports.sendRedirect = function(response, location, statusCode) {
+  console.log('in redirect')
   statusCode = statusCode || 302;
   // redirects browser by allowing them call another GET request with the proper location
   response.writeHead(statusCode, {Location: location});
@@ -25,7 +26,7 @@ exports.sendResponse = function (response, data, statusCode) {
 };
 
 exports.collectResponse = function(request, callback) {
-  var data;
+  var data = '';
   request.on('data', function(chunk) {
     data += chunk;
   });
