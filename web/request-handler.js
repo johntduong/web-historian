@@ -4,24 +4,6 @@ var utils = require('./http-helpers');
 var fs = require('fs');
 // require more modules/folders here!
 
-var sendResponse = function (response, data, statusCode) {
-  statusCode = statusCode || 200;
-  response.writeHead(statusCode, utils.headers);
-  response.end(JSON.stringify(data));
-};
-
-var collectResponse = function(request, callback) {
-  var data = '';
-  request.on('data', function(chunk) {
-    data += chunk;
-  });
-  request.on ('end', function() {
-    var responseUrl = data.split('=')[1];
-    // should parse data but causes undefined
-    callback(responseUrl);
-  });
-};
-
 var actions = {
   'GET': function(req, res) {
     // change request url to match formatting of actual stored archive urls
@@ -29,40 +11,28 @@ var actions = {
     if (req.url !== '/' ) {
       url = req.url.split('=')[1];
     } 
-    // // check if url exists
-    // if (archive.isUrlInList(url, null)) {
-    //   // if it exists, display it
-    //     // ie render in index
-    // } else {
-    //   // else add it to the list
-    //   // archive.addUrlToList(url, null);
-    //   // archive.downloadUrls(url);
-    //     // TODO: show placeholder
-    // }
-
-    // archive.isUrlInList(url, function(bool) {
-    //   if (bool) {
-    //     // show html
-    //     archive.isUrlArchived(url, function(bool, data, statusCode) {
-    //       sendResponse(res, data, statusCode);
-    //     });
-    //   } else {
-
-    //   }
-    // });
-
-    archive.isUrlArchived(url, function(bool, data, statusCode) {
-      sendResponse(res, data, statusCode);
+    archive.isUrlInList(url, function(bool) {
+      if (bool) {
+        // if in list
+        archive.isUrlArchived(url, function(bool, data, statusCode) {
+          utils.sendResponse(res, data, statusCode);
+        });
+      } else {
+        // add to list
+        archive.addUrlToList(url, function(data) {
+          archive.downloadUrls(url);
+        });
+      }
     });
   },
+
   'POST': function(req, res) {
-    collectResponse(req, function(data) {
-      archive.addUrlToList(data, function(content) {
-        sendResponse(res, content, 302);
-      });
-    });
-  },
-  'OPTIONS': ''// TODO: set headers
+    // utils.collectResponse(req, function(data) {
+    //   archive.addUrlToList(data, function(content) {
+    //     utils.sendResponse(res, content, 302);
+    //   });
+    // });
+  }
 };
 
 exports.handleRequest = function (req, res) {
@@ -71,6 +41,6 @@ exports.handleRequest = function (req, res) {
     actions[action](req, res);
   } else {
     // TODO: send response with 404;
-    sendResponse(res, '', 404);
+    utils.sendResponse(res, null, 404);
   }
 };

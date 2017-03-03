@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var http = require('http');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -22,9 +23,6 @@ exports.initialize = function(pathsObj) {
   });
 };
 
-// The following function names are provided to you to suggest how you might
-// modularize your code. Keep it clean!
-
 exports.readListOfUrls = function(callback) {
   fs.readFile(exports.paths.list, 'utf8', function(error, content) {
     if (error) {
@@ -38,18 +36,13 @@ exports.readListOfUrls = function(callback) {
 
 exports.isUrlInList = function(url, callback) {
   // check if url is in sites.txt
-  var listItems = fs.readFile(exports.paths.list, 'utf8', function(error, content) {
-    if (error) {
-      callback(error);
-    } else {
-      var items = content.toString().split('\n');
-      callback(_.reduce(items, function(accumulator, curr) {
-        if (url === curr) {
-          accumulator = true;
-        }
-        return accumulator;
-      }, false));
-    }
+  exports.readListOfUrls(function(content) {  
+    callback(_.reduce(content, function(accumulator, curr) {
+      if (url === curr) {
+        accumulator = true;
+      } 
+      return accumulator;
+    }, false));
   });
 };
 
@@ -57,11 +50,12 @@ exports.addUrlToList = function(url, callback) {
   fs.appendFile(exports.paths.list, url + '\n', 'utf8', function(error, content) {
     if (error) {
       callback(error);
-    } else {  
+    } else {
       callback(url);
     }
   });
 };
+
 exports.isUrlArchived = function(url, callback) {
   if (url === '/') {
     fs.readFile('/Volumes/student/hrsf72-web-historian/web/public/index.html', 'utf8', function(error, content) {
@@ -76,37 +70,24 @@ exports.isUrlArchived = function(url, callback) {
       if (error) {
         callback(false, error, 404);
       } else {
-        callback(true, content, undefined);
+        if (!content) {
+          callback(false, null, 404);
+        } else {
+          callback(true, content, undefined);
+        }
       }
     });
   }
 };
 
 exports.downloadUrls = function(urls) {
-  // urls = urls.split('\n');
-  for (var i = 0; i < urls.length; i++) { 
-    var path = exports.paths.archivedSites + '/' + urls[i];
-    fs.writeFile(path, urls[i], 'utf8', function(error, content) { });
+  // need http://
+  // pipe the readable stream with a createWriteStream
+  if (typeof urls === 'string') {
+    urls = urls.split('\n');
   }
+  _.each(urls, function(url) {
+    console.log('inside', url)
+    http.request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
+  });
 };
-
-
-      // it('should return the content of a website from the archive', function (done) {
-      //   var fixtureName = 'www.google.com';
-      //   var fixturePath = archive.paths.archivedSites + '/' + fixtureName;
-
-      //   // Create or clear the file.
-      //   var fd = fs.openSync(fixturePath, 'w');
-      //   fs.writeSync(fd, 'google');
-      //   fs.closeSync(fd);
-
-      //   // Write data to the file.
-      //   fs.writeFileSync(fixturePath, 'google');
-
-      //   request
-      //     .get('/' + fixtureName)
-      //     .expect(200, /google/, function (err) {
-      //       fs.unlinkSync(fixturePath);
-      //       done(err);
-      //     });
-      // });
