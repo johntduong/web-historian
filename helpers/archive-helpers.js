@@ -29,8 +29,8 @@ exports.readListOfUrls = function(callback) {
     if (error) {
       callback(error); 
     } else {
-      console.log(content);
       var fileList = content.split('\n');
+      console.log(fileList)
       callback(fileList);
     }
   });
@@ -49,7 +49,6 @@ exports.isUrlInList = function(url, callback) {
       }
 
       if (url === curr) {
-        console.log('equal', url)
         accumulator = true;
       } 
       return accumulator;
@@ -60,7 +59,6 @@ exports.isUrlInList = function(url, callback) {
 };
 
 exports.addUrlToList = function(url, callback) {
-  console.log('we are adding to the list');
   fs.appendFile(exports.paths.list, url + '\n', 'utf8', function(error, content) {
     if (error) {
       callback(error);
@@ -68,14 +66,6 @@ exports.addUrlToList = function(url, callback) {
       callback();
     }
   });
-
-  fs.readFile(exports.paths.list, 'utf8', function(error, content) {
-    if (error) {
-      console.log(' THERE IS A HUGE ERROR HERE');
-    } else {
-      console.log('content after adding to the list', content)
-    }
-  })
 };
 
 exports.isUrlArchived = function(url, callback) {
@@ -91,17 +81,30 @@ exports.isUrlArchived = function(url, callback) {
 exports.downloadUrls = function(urls) {
   // need http://
   // pipe the readable stream with a createWriteStream
-  console.log(urls)
   if (typeof urls === 'string') {
     urls = urls.split('\n');
   }
-  console.log(urls)
   _.each(urls, function(url) {
-    console.log(url);
-    http.request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
-    // fs.writeFile(exports.paths.archivedSites + '/' + url, 'hi friend');
-    fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(error, content) {
-      console.log(content);
-    });
+    if (url !== '') {
+      http.get({
+        host: url,
+      }, function(response) {
+        var body = '';
+        response.on('data', function(chunk) {
+          body += chunk;
+        });
+        response.on('end', function() {
+          console.log(body);
+          fs.writeFile(exports.paths.archivedSites + '/' + url, body);
+        });
+      });
+    }
+
+
+    // http.request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
+    // // fs.writeFile(exports.paths.archivedSites + '/' + url, 'hi friend');
+    // fs.readFile(exports.paths.archivedSites + '/' + url, 'utf8', function(error, content) {
+
+    // });
   });
 };
